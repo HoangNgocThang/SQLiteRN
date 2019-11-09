@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 
 const App = () => {
+  useEffect(() => {}, []);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />

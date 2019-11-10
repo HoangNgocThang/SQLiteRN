@@ -1,30 +1,62 @@
-import React, {useEffect} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+import * as React from 'react';
+import {View, Text} from 'react-native';
+import SQLite from 'react-native-sqlite-storage';
 
-const App = () => {
-  useEffect(() => {}, []);
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    const db = SQLite.openDatabase(
+      {
+        name: 'database.db',
+        location: 'default',
+        createFromLocation: '~www/database.db',
+      },
+      () => {},
+      error => {
+        console.log(error);
+      },
+    );
+    this.state = {
+      db,
+      users: [],
+    };
+  }
 
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView>
-          <View>
-            <Text>Sqlite</Text>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
-  );
-};
+  render() {
+    const {users} = this.state;
+    console.log('user', users);
+    return (
+      <View>
+        {users.map((e, index) => {
+          return (
+            <View style={{borderBottomWidth: 1}} key={e.username}>
+              <Text>username: {e.username} </Text>
+              <Text>password: {e.password} </Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+  }
 
-const styles = StyleSheet.create({});
+  componentDidMount() {
+    const {db} = this.state;
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM user;', [], (tx, results) => {
+        const rows = results.rows;
+        let users = [];
+        for (let i = 0; i < rows.length; i++) {
+          users.push({
+            ...rows.item(i),
+          });
+        }
+        this.setState({users});
+      });
+    });
+  }
 
-export default App;
+  componentWillUnmount() {
+    const {db} = this.state;
+    db.close();
+  }
+}
